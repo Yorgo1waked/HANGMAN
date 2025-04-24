@@ -1,0 +1,46 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+#word {
+  font-size: 2em;
+  letter-spacing: 10px;
+}
+.keyboard {
+  display: inline-block;
+  margin-top: 20px;
+}
+.keyboard-row {
+  margin-bottom: 10px;
+}
+.key-btn {
+  margin: 3px;
+  padding: 10px 15px;
+  font-size: 1em;
+  cursor: pointer;
+}
+#message {
+  margin-top: 20px;
+  font-size: 1.5em;
+  color: green;
+}
+#setup {
+  margin-bottom: 20px;
+}
+#custom-word {
+  padding: 5px;
+  font-size: 1em;
+  width: 200px;
+}
+#start-btn,
+#restart-btn {
+  padding: 5px 10px;
+  font-size: 1em;
+  margin: 10px 5px;
+}
+canvas {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+}

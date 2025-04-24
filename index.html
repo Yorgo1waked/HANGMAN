@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hangman Game</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <title>Hangman Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #word {
+      font-size: 2em;
+      letter-spacing: 10px;
+    }
+    .keyboard {
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .keyboard-row {
+      margin-bottom: 10px;
+    }
+    .key-btn {
+      margin: 3px;
+      padding: 10px 15px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: green;
+    }
+    #setup {
+      margin-bottom: 20px;
+    }
+    #custom-word {
+      padding: 5px;
+      font-size: 1em;
+      width: 200px;
+    }
+    #start-btn, #restart-btn {
+      padding: 5px 10px;
+      font-size: 1em;
+      margin: 10px 5px;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      background-color: #f8f8f8;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Hangman Game</h1>
+
+<div id="setup">
+  <label>Enter a word (or leave blank for random):</label><br>
+  <input type="text" id="custom-word" placeholder="e.g. pineapple">
+  <button id="start-btn">Start Game</button>
+</div>
+
+<canvas id="hangman" width="200" height="250"></canvas>
+
+<p id="word">_ _ _ _ _</p>
+<div class="keyboard" id="keyboard"></div>
+<p id="message"></p>
+<button id="restart-btn" style="display:none;">Restart</button>
+
+<script>
+  const randomWords = ["apple", "banana", "cherry", "orange"];
+  let selectedWord = "";
+  let guessed = [];
+  let maxTries = 6;
+  let wrongGuesses = 0;
+  const canvas = document.getElementById('hangman');
+  const ctx = canvas.getContext('2d');
+
+  function drawHangman(step) {
+    switch(step) {
+      case 1:
+        ctx.moveTo(10, 240); ctx.lineTo(190, 240);
+        ctx.moveTo(50, 240); ctx.lineTo(50, 20);
+        ctx.lineTo(130, 20); ctx.lineTo(130, 40);
+        ctx.stroke();
+        break;
+      case 2:
+        ctx.beginPath(); ctx.arc(130, 60, 20, 0, Math.PI * 2); ctx.stroke();
+        break;
+      case 3:
+        ctx.moveTo(130, 80); ctx.lineTo(130, 140); ctx.stroke();
+        break;
+      case 4:
+        ctx.moveTo(130, 90); ctx.lineTo(100, 120); ctx.stroke();
+        break;
+      case 5:
+        ctx.moveTo(130, 90); ctx.lineTo(160, 120); ctx.stroke();
+        break;
+      case 6:
+        ctx.moveTo(130, 140); ctx.lineTo(100, 190); ctx.stroke();
+        ctx.moveTo(130, 140); ctx.lineTo(160, 190); ctx.stroke();
+        break;
+    }
+  }
+
+  function drawFullHangman() {
+    for (let i = 1; i <= 6; i++) drawHangman(i);
+  }
+
+  function resetCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+  }
+
+  function startGame() {
+    const inputWord = document.getElementById("custom-word").value.trim().toLowerCase();
+    selectedWord = inputWord !== "" ? inputWord : randomWords[Math.floor(Math.random() * randomWords.length)];
+
+    guessed = [];
+    wrongGuesses = 0;
+    document.getElementById("message").textContent = "";
+    document.getElementById("keyboard").innerHTML = "";
+    resetCanvas();
+    drawHangman(1); // Only gallows for new game
+    updateWordDisplay();
+    createKeyboard();
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("restart-btn").style.display = "inline-block";
+  }
+
+  function updateWordDisplay() {
+    const display = selectedWord.split('').map(letter => guessed.includes(letter) ? letter : "_").join(" ");
+    document.getElementById("word").textContent = display;
+    if (!display.includes("_")) {
+      document.getElementById("message").textContent = "You win!";
+      disableAllButtons();
+    }
+  }
+
+  function createKeyboard() {
+    const keyboardLayout = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+    const keyboardDiv = document.getElementById("keyboard");
+
+    keyboardLayout.forEach(row => {
+      const rowDiv = document.createElement("div");
+      rowDiv.className = "keyboard-row";
+      row.split('').forEach(letter => {
+        const btn = document.createElement("button");
+        btn.textContent = letter;
+        btn.className = "key-btn";
+        btn.onclick = () => handleGuess(letter, btn);
+        rowDiv.appendChild(btn);
+      });
+      keyboardDiv.appendChild(rowDiv);
+    });
+  }
+
+  function handleGuess(letter, button) {
+    button.disabled = true;
+    if (selectedWord.includes(letter)) {
+      guessed.push(letter);
+      updateWordDisplay();
+    } else {
+      wrongGuesses++;
+      drawHangman(wrongGuesses + 1);
+      if (wrongGuesses >= maxTries) {
+        document.getElementById("message").textContent = `Game over! The word was "${selectedWord}".`;
+        disableAllButtons();
+      }
+    }
+  }
+
+  function disableAllButtons() {
+    document.querySelectorAll(".key-btn").forEach(btn => btn.disabled = true);
+  }
+
+  function restartGame() {
+    document.getElementById("setup").style.display = "block";
+    document.getElementById("custom-word").value = "";
+    document.getElementById("keyboard").innerHTML = "";
+    document.getElementById("message").textContent = "";
+    document.getElementById("word").textContent = "_ _ _ _ _";
+    document.getElementById("restart-btn").style.display = "none";
+    resetCanvas();
+    drawFullHangman(); // Show full figure again on welcome screen
+  }
+
+  // Draw figure on page load
+  drawFullHangman();
+
+  document.getElementById("start-btn").onclick = startGame;
+  document.getElementById("restart-btn").onclick = restartGame;
+</script>
+<script src="js/script.js"></script>
+</body>
+</html>
